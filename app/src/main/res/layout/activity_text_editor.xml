@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/editTextFilePath"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter file path"/>
+
+    <Button
+        android:id="@+id/open_editor_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open Editor Text"
+        android:onClick="onOpenEditorButtonClick"/>
+
+    <Button
+        android:id="@+id/save_path_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save File Path"
+        android:onClick="onSavePathButtonClick"/>
+
+    <!--com.hayinfx.terminclient.ScrollableTextView
+        android:id="@+id/scrollableTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" /-->
+
+</LinearLayout>

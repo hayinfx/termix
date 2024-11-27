@@ -1,0 +1,345 @@
+plugins {
+    id "com.android.application"
+//  id "org.jetbrains.kotlin.android" version "1.9.0"  // Use only this line for Kotlin
+}
+
+ext {
+    // The packageVariant defines the bootstrap variant that will be included in the app APK.
+    // This must be supported by com.termux.shared.termux.TermuxBootstrap.PackageVariant or app will
+    // crash at startup.
+    // Bootstrap of a different variant must not be manually installed by the user after app installation
+    // by replacing $PREFIX since app code is dependant on the variant used to build the APK.
+    // Currently supported values are: [ "apt-android-7" "apt-android-5" ]
+    packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
+}
+
+android {
+    namespace 'com.termix'  // Set your app's package name here
+
+buildToolsVersion = '33.0.3'
+    compileSdkVersion = 34
+    ndkVersion = '26.1.0'
+    def appVersionName = System.getenv("TERMUX_APP_VERSION_NAME") ?: ""
+    def apkVersionTag = System.getenv("TERMUX_APK_VERSION_TAG") ?: ""
+    def splitAPKsForDebugBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS") ?: "1"
+    def splitAPKsForReleaseBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_RELEASE_BUILDS") ?: "0" // F-Droid does not support split APKs #1904
+
+    dependencies {
+        implementation "androidx.annotation:annotation:1.3.0"
+        implementation "androidx.core:core:1.6.0"
+        implementation "androidx.drawerlayout:drawerlayout:1.1.1"
+        implementation "androidx.preference:preference:1.1.1"
+        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "com.google.android.material:material:1.4.0"
+        
+        
+        // https://mvnrepository.com/artifact/io.github.amrdeveloper/codeview
+//implementation 'io.github.amrdeveloper:codeview:1.3.9'
+
+ //implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+
+        implementation "com.google.guava:guava:24.1-jre"
+   //     implementation 'com.google.guava:guava:31.1-android'
+/**
+       implementation ('com.google.guava:guava:24.1-jre') {
+    exclude group: 'com.google.guava', module: 'listenablefuture'
+} 
+**/
+        implementation "io.noties.markwon:core:$markwonVersion"
+        implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
+        implementation "io.noties.markwon:linkify:$markwonVersion"
+        implementation "io.noties.markwon:recycler:$markwonVersion"
+
+  
+//    implementation project(':materialfiles')
+
+
+implementation(platform("io.github.Rosemoe.sora-editor:bom:0.18.0"))
+    implementation("io.github.Rosemoe.sora-editor:editor")
+ //   implementation("io.github.Rosemoe.sora-editor:language-textmate")
+    implementation("io.github.Rosemoe.sora-editor:language-java")
+    
+    // https://mvnrepository.com/artifact/io.github.Rosemoe.sora-editor/language-textmate
+//implementation("io.github.Rosemoe.sora-editor:language-textmate:0.7.0")
+
+        
+        
+        
+        
+        /**
+ implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0") {
+        // Exclude any lower versions that may be pulled in by other dependencies
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk7"
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8"
+    }
+    **/
+
+//    implementation 'androidx.core:core-ktx:1.10.1'  // Kotlin extensions
+	     //   implementation 'com.github.AmrDeveloper:CodeView:1.3.7'
+//    implementation 'com.github.davidmoten:word-wrap:0.1.13'
+//  implementation 'com.blacksquircle.ui:editorkit:2.9.0'
+    
+        implementation project(":terminal-view")
+        implementation project(":termux-shared")
+    }
+
+    defaultConfig {
+    
+
+     //   vectorDrawables.useSupportLibrary = true  // This enables backward compatibility
+   
+        applicationId "com.termix"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 118
+        versionName "0.118.0"
+
+        if (appVersionName) versionName = appVersionName
+        validateVersionName(versionName)
+
+        buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\"" // Used by TermuxApplication class
+
+        manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termix"
+        manifestPlaceholders.TERMUX_APP_NAME = "Termix"
+        manifestPlaceholders.TERMUX_API_APP_NAME = "Termix:API"
+        manifestPlaceholders.TERMUX_BOOT_APP_NAME = "Termix:Boot"
+        manifestPlaceholders.TERMUX_FLOAT_APP_NAME = "Termix:Float"
+        manifestPlaceholders.TERMUX_STYLING_APP_NAME = "Termix:Styling"
+        manifestPlaceholders.TERMUX_TASKER_APP_NAME = "Termix:Tasker"
+        manifestPlaceholders.TERMUX_WIDGET_APP_NAME = "Termix:Widget"
+
+        externalNativeBuild {
+            ndkBuild {
+                cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
+            }
+        }
+
+        splits {
+            abi {
+                enable ((gradle.startParameter.taskNames.any { it.contains("Debug") } && splitAPKsForDebugBuilds == "1") ||
+                    (gradle.startParameter.taskNames.any { it.contains("Release") } && splitAPKsForReleaseBuilds == "1"))
+                reset ()
+                include  'arm64-v8a'
+                universalApk false
+            }
+        }
+    }
+
+/**
+    signingConfigs {
+        debug {
+            storeFile file('testkey_untrusted.jks')
+            keyAlias 'alias'
+            storePassword 'xrj45yWGLbsO7W0v'
+            keyPassword 'xrj45yWGLbsO7W0v'
+        }
+    }
+**/
+
+    // Load environment variables
+    def keystoreFileEnv = System.getenv('keystoreFile')
+    def keystorePasswordEnv = System.getenv('keystorePassword')
+    def keyAliasEnv = System.getenv('keystoreAlias')
+    def keyPasswordEnv = System.getenv('keystorePassword')
+
+    signingConfigs {
+        release {
+            // Check for environment variables first
+            if (keystorePasswordEnv) {
+                storeFile file(keystoreFileEnv ?: property('keystoreFile')) // Fallback to gradle.properties if env not set
+                storePassword keystorePasswordEnv
+                keyAlias keyAliasEnv ?: property('keystoreAlias') // Fallback to gradle.properties if env not set
+                keyPassword keyPasswordEnv ?: property('keystorePassword') // Fallback to gradle.properties if env not set
+            } else if (project.hasProperty('keystorePassword')) { // Check gradle.properties or project properties
+                storeFile file(property('keystoreFile'))
+                storePassword property('keystorePassword')
+                keyAlias property('keystoreAlias')
+                keyPassword property('keystorePassword')
+            } else {
+                throw new GradleException("Keystore information is not provided. Please set environment variables or properties.")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release // Reference the signing config        
+       //     minifyEnabled true
+         //   shrinkResources false // Reproducible builds
+       //     proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            
+        }
+
+        debug {
+ signingConfig signingConfigs.release // Reference the signing config             
+         //   signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        // Flag to enable support for the new language APIs
+        coreLibraryDesugaringEnabled true
+
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+     //   sourceCompatibility = JavaVersion.VERSION_17
+        //targetCompatibility = JavaVersion.VERSION_17        
+    }
+    
+// If Kotlin used in your app
+// kotlin {
+//     jvmToolchain(17)
+// }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/cpp/Android.mk"
+        }
+    }
+
+    lintOptions {
+        disable 'ProtectedPermissions'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == "debug") {
+                def abi = output.getFilter(com.android.build.OutputFile.ABI)
+                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "debug") + "_" + (abi ? abi : "universal") + ".apk")
+            } else if (variant.buildType.name == "release") {
+                def abi = output.getFilter(com.android.build.OutputFile.ABI)
+                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "release") + "_" + (abi ? abi : "universal") + ".apk")
+            }
+        }
+    }
+
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.10"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
+
+    // TERMIN ONE DEP
+    implementation 'org.apache.commons:commons-compress:1.21' // or the latest version
+    implementation 'org.apache.commons:commons-lang3:3.12.0' // or the latest version
+    
+    
+//implementation 'com.nbsp:materialfilepicker:1.9.1'    
+//implementation 'com.github.arteaprogramar:Android_MaterialFilePicker:version'
+  
+		implementation 'com.github.frogggias:MaterialFilePicker:1.1.6'
+	
+    
+ //   implementation 'com.github.AmrDeveloper:CodeView:1.3.9'
+
+
+
+
+}
+
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    // other dependencies
+}
+
+task versionName {
+    doLast {
+        print android.defaultConfig.versionName
+    }
+}
+
+def validateVersionName(String versionName) {
+    // https://semver.org/spec/v2.0.0.html#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+    // ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+    if (!java.util.regex.Pattern.matches("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?\$", versionName))
+        throw new GradleException("The versionName '"  + versionName + "' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html.")
+}
+
+def downloadBootstrap(String arch, String expectedChecksum, String version) {
+    def digest = java.security.MessageDigest.getInstance("SHA-256")
+
+    def localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
+    def file = new File(projectDir, localUrl)
+    if (file.exists()) {
+        def buffer = new byte[8192]
+        def input = new FileInputStream(file)
+        while (true) {
+            def readBytes = input.read(buffer)
+            if (readBytes < 0) break
+            digest.update(buffer, 0, readBytes)
+        }
+        def checksum = new BigInteger(1, digest.digest()).toString(16)
+        while (checksum.length() < 64) { checksum = "0" + checksum }
+        if (checksum == expectedChecksum) {
+            return
+        } else {
+            logger.quiet("Deleting old local file with wrong hash: " + localUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+            file.delete()
+        }
+    }
+
+    def remoteUrl = "https://github.com/termux/termux-packages/releases/download/bootstrap-" + version + "/bootstrap-" + arch + ".zip"
+    logger.quiet("Downloading " + remoteUrl + " ...")
+
+    file.parentFile.mkdirs()
+    def out = new BufferedOutputStream(new FileOutputStream(file))
+
+    def connection = new URL(remoteUrl).openConnection()
+    connection.setInstanceFollowRedirects(true)
+    def digestStream = new java.security.DigestInputStream(connection.inputStream, digest)
+    out << digestStream
+    out.close()
+
+    def checksum = new BigInteger(1, digest.digest()).toString(16)
+    while (checksum.length() < 64) { checksum = "0" + checksum }
+    if (checksum != expectedChecksum) {
+        file.delete()
+        throw new GradleException("Wrong checksum for " + remoteUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+    }
+}
+
+clean {
+    doLast {
+        def tree = fileTree(new File(projectDir, 'src/main/cpp'))
+        tree.include 'bootstrap-*.zip'
+        tree.each { it.delete() }
+    }
+}
+
+task downloadBootstraps() {
+return;
+    doLast {
+        def packageVariant = project.ext.packageVariant
+        if (packageVariant == "apt-android-7") {
+            def version = "2022.04.28-r5" + "+" + packageVariant
+         //   downloadBootstrap("aarch64", "4a51a7eb209fe82efc24d52e3cccc13165f27377290687cb82038cbd8e948430", version)
+            
+        } else if (packageVariant == "apt-android-5") {
+            def version = "2022.04.28-r6" + "+" + packageVariant
+          //  downloadBootstrap("aarch64", "913609d439415c828c5640be1b0561467e539cb1c7080662decaaca2fb4820e7", version)
+            
+        } else {
+            throw new GradleException("Unsupported TERMUX_PACKAGE_VARIANT \"" + packageVariant + "\"")
+        }
+    }
+}
+
+afterEvaluate {
+    android.applicationVariants.all { variant ->
+        variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
+    }
+}

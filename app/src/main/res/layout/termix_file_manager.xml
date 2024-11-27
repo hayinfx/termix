@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Current Directory Text -->
+    <TextView
+        android:id="@+id/text_current_directory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Current Directory: "
+        android:textSize="18sp"
+        android:paddingBottom="8dp" />
+
+    <!-- Button to navigate up -->
+    <Button
+        android:id="@+id/button_up_directory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Up Directory"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- File Name Input -->
+    <EditText
+        android:id="@+id/edit_text_file_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter file or folder name"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Buttons for creating file and directory -->
+    <Button
+        android:id="@+id/button_create_file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create File" />
+
+    <Button
+        android:id="@+id/button_create_directory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Directory"
+        android:layout_marginTop="8dp"/>
+
+    <!-- RecyclerView for displaying files and directories -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_files"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"/>
+
+</LinearLayout>

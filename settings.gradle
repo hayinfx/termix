@@ -1,0 +1,9 @@
+include ':app', 
+ ':termux-shared', 
+':terminal-emulator', ':terminal-view'
+
+//include ':MaterialFiles'
+//project(':MaterialFiles').projectDir = new File(rootDir, 'MaterialFiles')
+
+//include ':materialfiles'
+//project(':materialfiles').projectDir = new File(rootDir, 'MaterialFiles/app')
